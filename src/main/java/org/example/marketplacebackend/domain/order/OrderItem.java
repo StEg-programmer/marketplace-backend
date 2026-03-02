@@ -59,4 +59,6 @@ public class OrderItem {
     public ItemKind getKind() { return kind; }
     public Long getProductId() { return productId; }
     public int getQuantity() { return quantity; }
+    public String getTitleSnapshot() { return titleSnapshot; }
+    public BigDecimal getPriceSnapshot() { return priceSnapshot; }
 }

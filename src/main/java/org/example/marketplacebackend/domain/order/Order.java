@@ -57,6 +57,31 @@ public class Order {
         this.status = OrderStatus.COMPLETED;
     }
 
+    public Order copyAsDraft(){
+        Order copy = new Order(this.buyerId);
+
+        for (OrderItem item : this.items) {
+            OrderItem clonedItem = new OrderItem(
+                    item.getProductId(),
+                    item.getTitleSnapshot(),
+                    item.getPriceSnapshot(),
+                    item.getQuantity(),
+                    item.getKind()
+            );
+            copy.addItem(clonedItem);
+        }
+
+        java.math.BigDecimal totalAmount = java.math.BigDecimal.ZERO;
+        for (OrderItem item : copy.getItems()) {
+            java.math.BigDecimal line = item.getPriceSnapshot()
+                    .multiply(java.math.BigDecimal.valueOf(item.getQuantity()));
+            totalAmount = totalAmount.add(line);
+        }
+        copy.setTotalAmount(totalAmount);
+
+        return copy;
+    }
+
     public Long getId() { return id; }
     public Long getBuyerId() { return buyerId; }
     public BigDecimal getTotalAmount() { return totalAmount; }
