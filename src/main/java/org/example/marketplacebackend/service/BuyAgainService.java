@@ -19,53 +19,23 @@ import java.util.List;
 public class BuyAgainService {
 
     private final OrderRepository _orderRepository;
-    private final PaymentRepository _paymentRepository;
-    private final DigitalFulfillmentService _digitalFulfillmentService;
-
-    public BuyAgainService(OrderRepository orderRepository,PaymentRepository paymentRepository,DigitalFulfillmentService digitalFulfillmentService) {
+    private final CheckoutProcessor _checkoutProcessor;
+    public BuyAgainService(OrderRepository orderRepository,CheckoutProcessor checkoutProcessor) {
         this._orderRepository = orderRepository;
-        this._paymentRepository = paymentRepository;
-        this._digitalFulfillmentService = digitalFulfillmentService;
+        this._checkoutProcessor =  checkoutProcessor;
     }
 
     @Transactional
     public CheckoutResponse buyAgain(Long prevOrderId, Long buyerId){
         Order prev = _orderRepository.findByIdWithItems(prevOrderId)
-                .orElseThrow(() -> new NotFoundException("Order not found: " + prevOrderId ));
+                .orElseThrow(()->new NotFoundException("Order not found: "+prevOrderId));
 
-        if(!prev.getBuyerId().equals(buyerId)){
-            throw new BadRequestException("You can buy again only your oun order");
+        if(!prev.getBuyerId().equals(buyerId)) {
+            throw new BadRequestException("You can buy again only your own order");
         }
 
         Order cloned = prev.copyAsDraft();
-        _orderRepository.save(cloned);
 
-        Payment payment = new Payment(
-                cloned.getId(),
-                "MOCK_PROVIDER",
-                Payment.PaymentStatus.SUCCESS,
-                cloned.getTotalAmount()
-        );
-        _paymentRepository.save(payment);
-
-        cloned.markPaid();
-
-        List<CheckoutResponse.DigitalKeyIssued> issueds = new ArrayList<>();
-        for (OrderItem item : cloned.getItems()) {
-            if (item.getKind() == OrderItem.ItemKind.DIGITAL){
-                List<DigitalKey> keys = _digitalFulfillmentService.issueKeysForItem(item);
-                for (DigitalKey key : keys) {
-                    issueds.add(new CheckoutResponse.DigitalKeyIssued(item.getProductId(),key.getKeyValue()));
-                }
-
-            }
-        }
-        CheckoutResponse resp = new CheckoutResponse();
-        resp.orderId = cloned.getId();
-        resp.paymentStatus = "PAID";
-        resp.totalAmount = cloned.getTotalAmount();
-        resp.issuedKeys = issueds;
-
-        return resp;
+        return _checkoutProcessor.process(cloned);
     }
 }

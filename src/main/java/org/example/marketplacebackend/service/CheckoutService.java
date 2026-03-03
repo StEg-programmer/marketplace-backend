@@ -20,64 +20,29 @@ import java.util.List;
 public class CheckoutService {
 
     private final ProductRepository productRepository;
-    private final OrderRepository orderRepository;
-    private final PaymentRepository paymentRepository;
-    private final OrderAssembler orderAssembler;
-    private final DigitalFulfillmentService _digitalFulfillmentService;
+    private final OrderAssembler _orderAssembler;
+    private final CheckoutProcessor _checkoutProcessor;
 
     public CheckoutService(ProductRepository productRepository,
-                           OrderRepository orderRepository,
-                           PaymentRepository paymentRepository,
                            OrderAssembler orderAssembler,
-                           DigitalFulfillmentService digitalFulfillmentService) {
+                           CheckoutProcessor checkoutProcessor) {
         this.productRepository = productRepository;
-        this.orderRepository = orderRepository;
-        this.paymentRepository = paymentRepository;
-        this.orderAssembler = orderAssembler;
-        this._digitalFulfillmentService = digitalFulfillmentService;
+        this._checkoutProcessor =  checkoutProcessor;
+        this._orderAssembler = orderAssembler;
     }
 
     @Transactional
     public CheckoutResponse checkout(CheckoutRequest req) {
 
-        List<OrderAssembler.ProductQty> items = new ArrayList<>();
+        List<OrderAssembler.ProductQty> items = new  ArrayList<>();
 
-        for (CheckoutRequest.Item i : req.items) {
-            Product product = productRepository.findById(i.productId)
-                    .orElseThrow(() -> new NotFoundException("Product not found: " + i.productId));
-
-            items.add(new OrderAssembler.ProductQty(product, i.quantity));
+        for (CheckoutRequest.Item item : req.items) {
+            Product product = productRepository.findById(item.productId)
+                    .orElseThrow(() -> new NotFoundException("Product not found: " + item.productId));
+            items.add(new OrderAssembler.ProductQty(product, item.quantity));
         }
 
-        Order order = orderAssembler.build(req.buyerId, items);
-        orderRepository.save(order);
-
-        Payment payment = new Payment(
-                order.getId(),
-                "MOCK_PROVIDER",
-                Payment.PaymentStatus.SUCCESS,
-                order.getTotalAmount()
-        );
-        paymentRepository.save(payment);
-
-        order.markPaid();
-
-        List<CheckoutResponse.DigitalKeyIssued> issued = new ArrayList<>();
-        for (OrderItem item : order.getItems()) {
-            if (item.getKind() == OrderItem.ItemKind.DIGITAL){
-                List<DigitalKey> keys = _digitalFulfillmentService.issueKeysForItem(item);
-                for (DigitalKey key : keys) {
-                    issued.add(new CheckoutResponse.DigitalKeyIssued(item.getProductId(), key.getKeyValue()));
-                }
-            }
-        }
-
-        CheckoutResponse resp = new CheckoutResponse();
-        resp.orderId = order.getId();
-        resp.totalAmount = order.getTotalAmount();
-        resp.paymentStatus = "PAID";
-        resp.issuedKeys = issued;
-
-        return resp;
+        Order order = _orderAssembler.build(req.buyerId,items);
+        return _checkoutProcessor.process(order);
     };
 }
