@@ -2,6 +2,13 @@ package org.example.marketplacebackend.service;
 
 import jakarta.transaction.Transactional;
 import org.example.marketplacebackend.domain.digital.DigitalKey;
+import org.example.marketplacebackend.domain.integration.IntegrationFactory;
+import org.example.marketplacebackend.domain.integration.delivery.DeliveryProvider;
+import org.example.marketplacebackend.domain.integration.delivery.DeliveryResult;
+import org.example.marketplacebackend.domain.integration.delivery.DeliveryType;
+import org.example.marketplacebackend.domain.integration.payment.PaymentProvider;
+import org.example.marketplacebackend.domain.integration.payment.PaymentResult;
+import org.example.marketplacebackend.domain.integration.payment.PaymentType;
 import org.example.marketplacebackend.domain.order.Order;
 import org.example.marketplacebackend.domain.order.OrderItem;
 import org.example.marketplacebackend.domain.order.Payment;
@@ -18,25 +25,54 @@ public class CheckoutProcessor {
     private final OrderRepository _orderRepository;
     private final PaymentRepository _paymentRepository;
     private final DigitalFulfillmentService _digitalFulfillmentService;
+    private final IntegrationFactory _integrationFactory;
 
-    public CheckoutProcessor(OrderRepository orderRepository, PaymentRepository paymentRepository, DigitalFulfillmentService digitalFulfillmentService) {
+    public CheckoutProcessor(OrderRepository orderRepository,
+                             PaymentRepository paymentRepository,
+                             DigitalFulfillmentService digitalFulfillmentService,
+                             IntegrationFactory integrationFactory) {
         this._orderRepository = orderRepository;
         this._paymentRepository = paymentRepository;
         this._digitalFulfillmentService = digitalFulfillmentService;
+        this._integrationFactory = integrationFactory;
     }
 
     @Transactional
     public CheckoutResponse process(Order order) {
         _orderRepository.save(order);
 
+        PaymentType paymentType = order.getPaymentType() != null
+                ? PaymentType.valueOf(order.getPaymentType())
+                : PaymentType.CARD;
+
+        DeliveryType deliveryType = order.getDeliveryType() != null
+                ? DeliveryType.valueOf(order.getDeliveryType())
+                : DeliveryType.NONE;
+
+        PaymentProvider paymentProvider = _integrationFactory.paymentFactory().create(paymentType);
+        PaymentResult paymentResult = paymentProvider.pay(order.getId(),order.getTotalAmount());
+
+        DeliveryProvider deliveryProvider = _integrationFactory.deliveryFactory().create(deliveryType);
+        DeliveryResult deliveryResult = deliveryProvider.arrange(order.getId(),deliveryType);
+
+
         Payment payment = new Payment(
                 order.getId(),
-                "MOCK_PROVIDER",
-                Payment.PaymentStatus.SUCCESS,
+                paymentResult.providerName(),
+                paymentResult.succes() ? Payment.PaymentStatus.SUCCESS : Payment.PaymentStatus.FAILED,
                 order.getTotalAmount()
         );
 
         _paymentRepository.save(payment);
+
+        if(!paymentResult.succes()) {
+            CheckoutResponse resp = new CheckoutResponse();
+            resp.orderId = order.getId();
+            resp.totalAmount =  order.getTotalAmount();
+            resp.paymentStatus = "FAILED";
+            resp.issuedKeys = List.of();
+            return resp;
+        }
 
         order.markPaid();
 

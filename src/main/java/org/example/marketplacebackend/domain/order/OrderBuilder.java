@@ -6,6 +6,8 @@ public class OrderBuilder {
 
     private final Order order;
     private BigDecimal total = BigDecimal.ZERO;
+    private String deliveryType;
+    private String paymentType;
 
     public OrderBuilder(Long buyerId) {
         this.order = new Order(buyerId);
@@ -21,8 +23,20 @@ public class OrderBuilder {
         return this;
     }
 
+    public OrderBuilder withPaymentType(String paymentType) {
+        this.paymentType = paymentType;
+        return this;
+    }
+
+    public OrderBuilder withDeliveryType(String deliveryType) {
+        this.deliveryType = deliveryType;
+        return this;
+    }
+
     public Order build() {
         order.setTotalAmount(total);
+        order.setDeliveryType(deliveryType);
+        order.setPaymentType(paymentType);
         return order;
     }
 }

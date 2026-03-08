@@ -11,6 +11,12 @@ public class CheckoutRequest {
     @NotEmpty
     public List<Item> items;
 
+    @NotEmpty
+    public String paymentType;
+
+    @NotEmpty
+    public String deliveryType;
+
     public static class Item {
         @NotNull public Long productId;
         @Min(1) public int quantity;

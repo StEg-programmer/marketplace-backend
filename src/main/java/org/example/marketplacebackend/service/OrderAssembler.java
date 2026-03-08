@@ -18,8 +18,10 @@ public class OrderAssembler {
         this.priceCalculator = priceCalculator;
     }
 
-    public Order build(Long buyerId, List<ProductQty> items) {
-        OrderBuilder builder = new OrderBuilder(buyerId);
+    public Order build(Long buyerId, List<ProductQty> items, String paymentType, String deliveryType) {
+        OrderBuilder builder = new OrderBuilder(buyerId)
+                .withPaymentType(paymentType)
+                .withDeliveryType(deliveryType);
 
         for (ProductQty pq : items) {
             Product p = pq.product();

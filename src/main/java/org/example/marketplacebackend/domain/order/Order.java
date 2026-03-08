@@ -37,6 +37,12 @@ public class Order {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> items = new ArrayList<>();
 
+    @Column(name = "payment_type")
+    private String paymentType;
+
+    @Column(name = "delivery_type")
+    private String deliveryType;
+
     protected Order() {}
 
     public Order(Long buyerId) {
@@ -86,4 +92,8 @@ public class Order {
     public Long getBuyerId() { return buyerId; }
     public BigDecimal getTotalAmount() { return totalAmount; }
     public List<OrderItem> getItems() { return items; }
+    public String getPaymentType() {return paymentType;}
+    public void setPaymentType(String paymentType) {this.paymentType = paymentType;}
+    public String getDeliveryType() {return deliveryType;}
+    public void setDeliveryType(String deliveryType) {this.deliveryType = deliveryType;}
 }

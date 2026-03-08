@@ -4,7 +4,8 @@ spring:
     username: mp_user
     password: mp_pass
     driver-class-name: org.postgresql.Driver
-
+  profiles:
+    active: dev
   jpa:
     hibernate:
       ddl-auto: validate

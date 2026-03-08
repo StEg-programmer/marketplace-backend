@@ -42,7 +42,9 @@ public class CheckoutService {
             items.add(new OrderAssembler.ProductQty(product, item.quantity));
         }
 
-        Order order = _orderAssembler.build(req.buyerId,items);
+        String paymentType = req.paymentType != null ? req.paymentType : "CARD";
+        String deliveryType = req.deliveryType != null ? req.deliveryType : "NONE";
+        Order order = _orderAssembler.build(req.buyerId,items,paymentType,deliveryType);
         return _checkoutProcessor.process(order);
     };
 }
