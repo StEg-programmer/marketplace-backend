@@ -11,9 +11,6 @@ public class AddDigitalKeysRequest {
     @NotNull
     public Long sellerId;
 
-    @NotNull
-    public Long productId;
-
     @NotEmpty
     public List<@NotBlank String> keys;
 }

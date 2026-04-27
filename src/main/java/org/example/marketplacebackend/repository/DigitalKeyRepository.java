@@ -22,5 +22,6 @@ public interface DigitalKeyRepository extends JpaRepository<DigitalKey, Long> {
     List<DigitalKey> lockNextAvailable(@Param("productId") Long productId,
                                        @Param("limit") int limit);
 
+    List<DigitalKey> findAllByOrderItemId(Long orderItemId);
     long countByProductIdAndStatus(Long productId, DigitalKey.KeyStatus status);
 }

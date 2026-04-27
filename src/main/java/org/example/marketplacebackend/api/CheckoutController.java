@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import org.example.marketplacebackend.domain.order.Order;
 import org.example.marketplacebackend.dto.CheckoutRequest;
 import org.example.marketplacebackend.dto.CheckoutResponse;
+import org.example.marketplacebackend.service.CheckoutFacade;
 import org.example.marketplacebackend.service.CheckoutService;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
@@ -16,14 +17,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/checkout")
 public class CheckoutController {
 
-    private final CheckoutService _checkoutService;
+    private final CheckoutFacade _checkoutFacade;
 
-    public CheckoutController(CheckoutService checkoutService) {
-        this._checkoutService = checkoutService;
+    public CheckoutController(CheckoutFacade checkoutFacade) {
+        this._checkoutFacade = checkoutFacade;
     }
 
     @PostMapping
     public ResponseEntity<CheckoutResponse> checkout (@Valid @RequestBody CheckoutRequest req) {
-        return ResponseEntity.ok(_checkoutService.checkout(req));
+        return ResponseEntity.ok(_checkoutFacade.placeOrder(req));
     }
 }

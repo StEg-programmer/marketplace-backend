@@ -16,7 +16,7 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // пока seller_id как Long (User entity сделаем позже)
+
     @Column(name = "seller_id", nullable = false)
     private Long sellerId;
 
@@ -42,10 +42,10 @@ public class Product {
     private BigDecimal basePrice;
 
     @Column(name = "discount_percent")
-    private Integer discountPercent; // nullable -> скидки нет
+    private Integer discountPercent;
 
     @Column(name = "attributes_json", columnDefinition = "TEXT")
-    private String attributesJson; // пока строка (потом можно JSON)
+    private String attributesJson;
 
     @Column(name = "created_at", nullable = false)
     private Instant createdAt = Instant.now();
@@ -66,7 +66,7 @@ public class Product {
 
     public void setStatus(ProductStatus status) { this.status = status; }
 
-    // package-private setters (для Builder, который будет в том же пакете)
+
     void setSellerId(Long sellerId) { this.sellerId = sellerId; }
     void setCategory(Category category) { this.category = category; }
     void setTitle(String title) { this.title = title; }

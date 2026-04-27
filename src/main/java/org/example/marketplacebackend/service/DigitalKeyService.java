@@ -20,9 +20,9 @@ public class DigitalKeyService {
     }
 
     @Transactional
-    public int addKeys(AddDigitalKeysRequest req){
-        Product product = _productRepository.findById(req.productId)
-                .orElseThrow(()->new IllegalArgumentException("Product not found" + req.productId));
+    public int addKeys(Long productId,AddDigitalKeysRequest req){
+        Product product = _productRepository.findById(productId)
+                .orElseThrow(()->new IllegalArgumentException("Product not found" + productId));
         if (product.getType() != Product.ProductType.DIGITAL){
             throw new IllegalArgumentException("Product type is not Digital");
         }
@@ -32,7 +32,7 @@ public class DigitalKeyService {
 
         int added = 0;
         for (String key : req.keys){
-            _digitalKeyRepository.save(new DigitalKey(req.productId,req.sellerId, key));
+            _digitalKeyRepository.save(new DigitalKey(productId,req.sellerId, key));
             added++;
         }
         return added;

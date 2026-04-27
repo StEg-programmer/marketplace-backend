@@ -26,15 +26,18 @@ public class CheckoutProcessor {
     private final PaymentRepository _paymentRepository;
     private final DigitalFulfillmentService _digitalFulfillmentService;
     private final IntegrationFactory _integrationFactory;
+    private final PhysicalFulfillmentService _physicalFulfillmentService;
 
     public CheckoutProcessor(OrderRepository orderRepository,
                              PaymentRepository paymentRepository,
                              DigitalFulfillmentService digitalFulfillmentService,
-                             IntegrationFactory integrationFactory) {
+                             IntegrationFactory integrationFactory,
+                             PhysicalFulfillmentService physicalFulfillmentService) {
         this._orderRepository = orderRepository;
         this._paymentRepository = paymentRepository;
         this._digitalFulfillmentService = digitalFulfillmentService;
         this._integrationFactory = integrationFactory;
+        this._physicalFulfillmentService = physicalFulfillmentService;
     }
 
     @Transactional
@@ -83,6 +86,8 @@ public class CheckoutProcessor {
                 for (DigitalKey key : keys) {
                     issueds.add(new CheckoutResponse.DigitalKeyIssued(item.getProductId(),key.getKeyValue()));
                 }
+            }else if (item.getKind() == OrderItem.ItemKind.PHYSICAL){
+                _physicalFulfillmentService.fulfill(item);
             }
         }
 

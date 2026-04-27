@@ -8,9 +8,7 @@ import java.time.Instant;
 @Table(name = "order_items")
 public class OrderItem {
 
-    public Long getId() {
-        return id;
-    }
+
 
     public enum ItemKind { PHYSICAL, DIGITAL }
 
@@ -56,6 +54,7 @@ public class OrderItem {
         this.order = order;
     }
 
+    public Long getId() {return id;}
     public ItemKind getKind() { return kind; }
     public Long getProductId() { return productId; }
     public int getQuantity() { return quantity; }

@@ -30,7 +30,7 @@ public class Category {
     public Long getId() {return id;}
     public  Category getParent() {return parent;}
     public String getName() {return name;}
-
+    public Long getParentId() {return parent == null ? null : parent.getId();}
     public void setName(String name) {this.name = name;}
     public void setParent(Category parent) {this.parent = parent;}
 

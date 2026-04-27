@@ -96,4 +96,8 @@ public class Order {
     public void setPaymentType(String paymentType) {this.paymentType = paymentType;}
     public String getDeliveryType() {return deliveryType;}
     public void setDeliveryType(String deliveryType) {this.deliveryType = deliveryType;}
+    public PaymentStatus getPaymentStatus(){return paymentStatus;}
+    public OrderStatus getStatus(){return status;}
+    public Instant getCreatedAt(){return createdAt;}
+
 }
